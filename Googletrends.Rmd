@@ -1,0 +1,142 @@
+---
+title: "Job opportunities"
+author: Robert ten Hove
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    css: corp-styles.css
+    df_print: paged
+    highlight: pygments
+    number_sections: yes
+    self_contained: yes
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+version: '0.1'
+---
+
+Search trends in Google 
+
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+rm(list = ls())  # remove all data from global environment.
+library(gtrendsR)
+library(reshape2)
+library(ggplot2)
+library(scales)
+```
+Keywords
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+  
+google.trends = gtrends(c("job opportunities"), gprop = "web", time = "all")[[1]]
+google.trends = dcast(google.trends, date ~ keyword + geo, value.var = "hits")
+rownames(google.trends) = google.trends$date
+google.trends$date = NULL
+
+
+```
+Set timezone
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+Sys.setenv(TZ = "UTC")
+```
+
+Geographical region and time-frame for "job" 
+Country(&region) abbreviations:
+https://en.wikipedia.org/wiki/ISO_3166-2 
+
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+google_job <- gtrends(c("job"), geo = c("NL", "DE", "ES", "FR", "US"), gprop = "web", time = "2019-10-01 2020-04-20")[[1]]
+
+```
+Plot trend of "job" from Google in four different countries. If hit is high, it means high google-search-popularity!
+
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+
+google_job$date <- as.Date(google_job$date)
+
+p1 <- ggplot(google_job, aes(date, log(hits), colour = geo)) + 
+       geom_point(size = 0.5) +
+       geom_smooth(model = lm) + 
+       xlab("Date") + 
+       ylab("log 'Relative Interest'") + 
+       ggtitle("Google trend on keyword 'job' in different countries") +
+       # scale_x_date(labels = date_format("%m-%Y")) +
+       scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+       theme_grey(base_size = 12)
+
+p1
+
+```
+
+Geographical region and time-frame for **corona**.  
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+google_covid <- gtrends(c("corona"), geo = c("NL", "DE", "ES", "FR", "US"), gprop = "web", time = "2020-01-01 2020-04-21")[[1]]
+
+```
+Search popularity on **Corona**.  
+
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+
+
+hits_num <- function(x) {
+    x$hits <- gsub("<1", NA, x$hits)
+      x$hits <- as.numeric(x$hits)
+        return(x)
+}
+
+google_covid <- hits_num(google_covid)
+
+
+google_covid$date <- as.Date(google_covid$date)
+
+p2<- ggplot(google_covid, aes(date, hits, colour = geo)) + 
+      geom_point(size = 0.5) +
+      geom_smooth(model = lm) + 
+      xlab("Date") + 
+      ylab("Relative Interest") + 
+      ggtitle("Google trend on keyword 'corona' in different countries") +
+      # scale_x_date(labels = date_format("%m-%Y")) +
+      scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+      theme_grey(base_size = 12)
+
+p2 
+
+```
+
+
+Geographical region and time-frame for **biology**.  
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+google_bio <- gtrends(c("biology"), geo = c("NL", "DE", "ES", "FR", "US"), gprop = "web", time = "2020-01-01 2020-04-21")[[1]]
+
+```
+Search popularity on **biology**.  
+
+```{r echo=TRUE, warning=FALSE, message=FALSE,  include=TRUE}
+
+# hits_num <- function(x) {
+#     x$hits <- gsub("<1", NA, x$hits)
+#       x$hits <- as.numeric(x$hits)
+#         return(x)
+# }
+# 
+# google_bio <- hits_num(google_bio)
+# 
+
+google_bio$date <- as.Date(google_bio$date)
+
+p3<- ggplot(google_bio, aes(date, log(hits), colour = geo)) + 
+      geom_point(size = 0.5) +
+      geom_smooth(model = lm) + 
+      xlab("Date") + 
+      ylab("Relative Interest") + 
+      ggtitle("Google trend on keyword 'biology' in different countries") +
+      # scale_x_date(labels = date_format("%m-%Y")) +
+      scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+      theme_grey(base_size = 8)
+
+p3 
+
+```
